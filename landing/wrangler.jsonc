@@ -1,0 +1,5 @@
+{
+  "name": "open-form-landing",
+  "compatibility_date": "2026-10-10",
+  "assets": { "directory": "./dist" }
+}
