@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contact us</title>
+    <script>
+      function openFormsVerified() { document.getElementById('submit').disabled = false; }
+      function openFormsExpired() { document.getElementById('submit').disabled = true; }
+    </script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  </head>
+  <body>
+    <h1>Contact us</h1>
+    <!-- Replace action and the public site key. Enable/configure contact first. -->
+    <form action="https://YOUR-WORKER.YOUR-SUBDOMAIN.workers.dev/f/contact" method="POST">
+      <p><label>Name <input name="name" required maxlength="100" autocomplete="name"></label></p>
+      <p><label>Email <input type="email" name="email" required maxlength="254" autocomplete="email"></label></p>
+      <p><label>Message <textarea name="message" required minlength="5" maxlength="8000"></textarea></label></p>
+      <div hidden aria-hidden="true"><label>Leave empty <input name="_gotcha" tabindex="-1" autocomplete="off"></label></div>
+      <div class="cf-turnstile" data-sitekey="YOUR-TURNSTILE-SITE-KEY" data-action="contact"
+        data-callback="openFormsVerified" data-expired-callback="openFormsExpired"
+        data-error-callback="openFormsExpired"></div>
+      <button id="submit" type="submit" disabled>Send message</button>
+      <noscript>JavaScript is required for spam verification.</noscript>
+    </form>
+  </body>
+</html>

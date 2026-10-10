@@ -1,0 +1,6 @@
+# Put real secrets in .dev.vars locally and Wrangler secrets in production.
+# Test Turnstile keys are intentionally not included; use them only locally.
+RESEND_API_KEY=replace-with-your-resend-sending-api-key
+TURNSTILE_SECRET_KEY=replace-with-your-turnstile-secret-key
+ADMIN_TOKEN=replace-with-a-random-secret-of-at-least-32-characters
+ABUSE_SECRET=replace-with-a-different-random-secret-of-at-least-32-characters

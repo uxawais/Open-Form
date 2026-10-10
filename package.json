@@ -1,0 +1,49 @@
+{
+  "name": "openforms",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A self-hosted form backend for Cloudflare Workers and D1",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "types": "wrangler types src/worker-configuration.d.ts",
+    "check:config": "node scripts/check-config.mjs",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tests/tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run check:config && npm run typecheck && npm test",
+    "build": "npm run check:config && wrangler deploy --dry-run --outdir dist",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "deploy": "npm run check:config && npm run db:migrate:remote && wrangler deploy"
+  },
+  "cloudflare": {
+    "bindings": {
+      "DB": {
+        "description": "Private form submissions and durable email outbox. Created in your account."
+      },
+      "RESEND_API_KEY": {
+        "description": "Your Resend sending API key for your verified domain."
+      },
+      "TURNSTILE_SECRET_KEY": {
+        "description": "Secret key for your Turnstile widget; configure your website's hostname."
+      },
+      "ADMIN_TOKEN": {
+        "description": "Random bearer token of at least 32 characters for private submission access."
+      },
+      "ABUSE_SECRET": {
+        "description": "Random secret of at least 32 characters for temporary abuse-control hashes."
+      }
+    }
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "1.4.0",
+    "typescript": "7.0.2",
+    "vitest": "5.0.3",
+    "wrangler": "4.149.0"
+  }
+}

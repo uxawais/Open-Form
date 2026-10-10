@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "limits": { "bodyBytes": 32768, "fieldCount": 24, "emailDaily": 90, "emailMonthly": 2700 },
+  "delivery": { "batchSize": 2, "maxAttempts": 8, "timeoutMs": 8000, "retryWindowHours": 23 },
+  "forms": {
+    "contact": {
+      "enabled": false,
+      "allowedOrigins": ["https://www.example.com", "http://localhost:8080", "http://localhost:3000"],
+      "allowMissingOrigin": false,
+      "retentionDays": 90,
+      "fields": {
+        "name": { "type": "text", "required": true, "maxLength": 100 },
+        "email": { "type": "email", "required": true, "maxLength": 254 },
+        "message": { "type": "text", "required": true, "minLength": 5, "maxLength": 8000 }
+      },
+      "emailField": "email",
+      "honeypot": "_gotcha",
+      "turnstile": { "enabled": true, "hostnames": ["www.example.com", "localhost"], "action": "contact", "secretBinding": "TURNSTILE_SECRET_KEY" },
+      "rateLimit": { "max": 5, "windowSeconds": 600 },
+      "duplicateWindowSeconds": 300,
+      "notification": {
+        "from": { "name": "Example Website", "email": "forms@example.com" },
+        "to": ["owner@example.com"],
+        "replyTo": "submitter",
+        "subject": "New {{formId}} submission from {{name}}",
+        "text": "A new {{formId}} submission arrived at {{createdAt}}.\n\n{{fields}}\n\nSubmission: {{submissionId}}",
+        "html": "<h1>New {{formId}} submission</h1><p>Received {{createdAt}}</p>{{fields}}<p>Submission: {{submissionId}}</p>"
+      },
+      "acknowledgment": {
+        "enabled": false,
+        "nameField": "name",
+        "replyTo": "owner@example.com",
+        "subject": "Thanks for contacting us",
+        "text": "Hi {{name}},\n\nThanks for reaching out. We received your message and will reply soon.\n\nExample Website",
+        "html": "<p>Hi {{name}},</p><p>Thanks for reaching out. We received your message and will reply soon.</p><p>Example Website</p>"
+      },
+      "redirects": {}
+    },
+    "newsletter": {
+      "enabled": false,
+      "allowedOrigins": ["https://www.example.com"],
+      "retentionDays": 90,
+      "fields": { "email": { "type": "email", "required": true, "maxLength": 254 } },
+      "emailField": "email",
+      "turnstile": { "enabled": true, "hostnames": ["www.example.com"], "action": "newsletter" },
+      "rateLimit": { "max": 3, "windowSeconds": 600 },
+      "duplicateWindowSeconds": 300,
+      "notification": {
+        "from": { "name": "Example Website", "email": "forms@example.com" },
+        "to": ["owner@example.com"],
+        "replyTo": "submitter",
+        "subject": "New newsletter request",
+        "text": "{{fields}}\n\nSubmission: {{submissionId}}",
+        "html": "<h1>Newsletter request</h1>{{fields}}<p>Submission: {{submissionId}}</p>"
+      },
+      "acknowledgment": { "enabled": false },
+      "redirects": {}
+    },
+    "feedback": {
+      "enabled": false,
+      "allowedOrigins": ["https://www.example.com"],
+      "retentionDays": 30,
+      "fields": {
+        "rating": { "type": "enum", "required": true, "values": ["1", "2", "3", "4", "5"], "maxLength": 1 },
+        "message": { "type": "text", "required": true, "maxLength": 4000 }
+      },
+      "honeypot": "_gotcha",
+      "turnstile": { "enabled": true, "hostnames": ["www.example.com"], "action": "feedback" },
+      "rateLimit": { "max": 5, "windowSeconds": 600 },
+      "duplicateWindowSeconds": 300,
+      "notification": {
+        "from": { "name": "Example Website", "email": "forms@example.com" },
+        "to": ["owner@example.com"],
+        "replyTo": "owner@example.com",
+        "subject": "New feedback",
+        "text": "{{fields}}\n\nSubmission: {{submissionId}}",
+        "html": "<h1>Feedback</h1>{{fields}}<p>Submission: {{submissionId}}</p>"
+      },
+      "acknowledgment": { "enabled": false },
+      "redirects": {}
+    }
+  }
+}
