@@ -1,8 +1,8 @@
 # Verification record
 
-Local checks completed on 2026-10-10. No live resources were deployed and no real
-emails were sent during verification. The repository had not yet been pushed
-when these local checks were recorded.
+Local checks completed on 2026-10-10, including the provider-request runtime fix.
+No live resources were deployed and no real emails were sent during these checks.
+External Turnstile and Resend requests use controlled test doubles.
 
 ## Executed checks
 
@@ -10,15 +10,15 @@ when these local checks were recorded.
 | --- | --- |
 | Configuration validation | Passed; all three sample forms are deliberately disabled |
 | Source and test TypeScript checks | Passed with strict settings |
-| Vitest in Cloudflare's local Workers runtime | 68 tests passed across three files |
+| Vitest in Cloudflare's local Workers runtime | 69 tests passed across three files, including native provider-request construction and manual redirect checks |
 | D1 migrations | Applied in local D1; Wrangler reports no outstanding migrations |
-| Wrangler deployment dry run | Passed; 55.99 KiB bundle, 14.58 KiB gzip |
+| Wrangler deployment dry run | Passed; 56.16 KiB bundle, 14.67 KiB gzip |
 | npm dependency audit | Zero known vulnerabilities reported |
-| React example | Strict TypeScript check passed using temporary React 19 type declarations |
+| React example | Checked during the initial build using temporary React 19 type declarations; not rerun in this verification pass |
 
-The Node.js version was 24.19.0. Development dependencies are pinned in
-`package-lock.json`. React type declarations were used outside the project for
-checking the example; React is not a Worker dependency.
+The Node.js version for this verification pass was 24.15.0. Development dependencies
+are pinned in `package-lock.json`. React type declarations were used outside the
+project for the initial example check; React is not a Worker dependency.
 
 ## Automated coverage
 
@@ -32,6 +32,9 @@ Turnstile and Resend HTTP responses are mocked.
   unsupported content, repeated fields, files, byte limits, and invalid UTF-8.
 - Exact Origin/CORS restrictions, production HTTPS, methods, admin authorization,
   hostname/action verification, invalid Turnstile tokens, and development-key isolation.
+- Native Workers request construction for Turnstile and both email deliveries,
+  with explicit manual redirects so provider secrets and email content are not
+  forwarded to a redirect destination.
 - Honeypots, persistent atomic rate counters, duplicate/replay handling,
   concurrent submission races, and idempotency keys reused with different data.
 - Escaped email templates, fixed senders, acknowledgment suppression/cooldowns,
@@ -55,8 +58,9 @@ Cron Trigger, and private administrative retrieval after deployment.
 The official deployment-button resource workflow was checked against Cloudflare
 documentation, but the live dashboard flow was not executed. The README deployment
 button points to `uxawais/Open-Form`; distributing this template through the button
-requires a public repository. Hosted GitHub Actions results appear in the
-repository's Actions tab after pushing; the checks above describe local execution.
+requires a public repository. Hosted checks are available in the repository's
+[Actions tab](https://github.com/uxawais/Open-Form/actions); the checks above
+describe local execution.
 
 Browser widget behavior and inbox delivery have not been validated with live
 providers. Local Workers tests and a dry-run build do not establish production
