@@ -186,9 +186,7 @@ notifies its owner; it does not subscribe anyone to a marketing campaign.
 
 - [Deployment](docs/deployment.md)
 - [Configuration](docs/configuration.md)
-- [awaisx.com integration](docs/awaisx-integration.md)
-- [Release verification](docs/release.md)
-- [Changelog](CHANGELOG.md)
+- [Verification](docs/verification.md)
 - [API](docs/api.md)
 - [Architecture](docs/architecture.md)
 - [Platform limits](docs/platform-limits.md)
