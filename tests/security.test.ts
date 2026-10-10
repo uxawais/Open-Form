@@ -11,9 +11,10 @@ let config: ReturnType<typeof fixture>, provider: FakeProvider;
 beforeEach(() => { config = fixture(); provider = new FakeProvider(); });
 describe('security controls', () => {
   it('constructs provider requests using the native Workers Request implementation', async () => {
+    const requests: Request[] = [];
     const worker = createWorker(config, (url, init) => {
       // The HTTP double alone does not validate Workers-specific request options.
-      new Request(url, init);
+      requests.push(new Request(url, init));
       return provider.fetch(url, init);
     });
     const ctx = createExecutionContext();
@@ -24,6 +25,7 @@ describe('security controls', () => {
     await waitOnExecutionContext(ctx);
     expect(response.status).toBe(202);
     expect((await jobs()).map(job => job.status)).toEqual(['accepted', 'accepted']);
+    expect(requests.map(request => request.redirect)).toEqual(['manual', 'manual', 'manual']);
   });
   it.each([
     { success: false, 'error-codes': ['invalid-input-response'] },
