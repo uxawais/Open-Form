@@ -111,7 +111,8 @@ export async function processDelivery(id: string, env: Bindings, config: Config,
       },
       body: job.payload,
       signal: AbortSignal.timeout(config.delivery.timeoutMs),
-      redirect: 'error',
+      // Never forward provider credentials or email content to a redirect target.
+      redirect: 'manual',
     });
     let data: Record<string, unknown> = {};
     try { data = await responseJson(response); }

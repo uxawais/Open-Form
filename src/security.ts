@@ -43,7 +43,8 @@ export async function verifyTurnstile(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ secret, response: token, idempotency_key: crypto.randomUUID() }),
       signal: AbortSignal.timeout(5000),
-      redirect: 'error',
+      // Workers supports manual/follow; a manual redirect is rejected by !ok below.
+      redirect: 'manual',
     });
     if (!response.ok) throw new Error('upstream');
     const text = await response.text();
