@@ -32,48 +32,115 @@ See [deployment](docs/deployment.md).
 - No runtime packages; TypeScript, Wrangler, Vitest, and Cloudflare's test plugin
   are development dependencies.
 
-## Quick start
+## Use Open Form on your website
 
-Use Node.js 24 (or Node.js 22.18+).
+Open Form runs in **your Cloudflare account**. Each form message is checked by
+Turnstile, saved in your private D1 database, and emailed through your Resend
+account. You keep your website design; you only point its form to your Open Form
+address.
 
-~~~sh
-npm ci
-cp .dev.vars.example .dev.vars
-npm run db:migrate:local
-npm run dev -- --var ENVIRONMENT:development
-~~~
+### What you need
 
-All example forms are **disabled**. Edit `config/forms.json` to replace the example
-origins, Turnstile hostnames/actions, sender and recipient addresses. Enable the
-forms you need. Put local secrets in `.dev.vars`; it is ignored by Git.
+- A Cloudflare account (Workers and D1 host the form service and its private records).
+- A domain you control, for the website and email setup.
+- A Resend account and a verified sending domain (to send notifications and
+  optional thank-you emails).
+- The website address where the form will appear, for example `https://example.com`.
 
-Use Cloudflare's published development Turnstile keys only with
-`ENVIRONMENT=development`. Production rejects these keys. Local email sending is
-real: use your own verified Resend sender and a recipient you control, or omit
-`RESEND_API_KEY` to keep jobs queued without sending.
+No paid Open Form account or shared service is involved. Your API keys, database,
+messages, and email are yours.
 
-Follow the [deployment guide](docs/deployment.md) to create/bind remote D1, configure
-production secrets, verify your sending domain, and activate your own endpoint.
-No account resources are created by `npm test` or `npm run build`.
+### Setup, step by step
 
-## Connect an HTML form
+1. **Create your own copy.** Click **Deploy to Cloudflare** at the top of this
+   page and follow Cloudflare's prompts, or use the [manual deployment guide](docs/deployment.md).
+   This creates the Worker and D1 database in your Cloudflare account. The first
+   deployment has all example forms switched off.
+2. **Create a Turnstile widget.** In Cloudflare, add the hostname of your website
+   (such as `example.com`). Keep both the public **site key** and private **secret
+   key**. The site key goes in the website; the secret key goes only in the Worker.
+3. **Set up email sending.** In Resend, verify a domain you own and create an API
+   key. You will also choose the email address that receives form messages. A
+   thank-you email to the visitor is optional.
+4. **Add private settings to your Worker.** In your copy of this project, edit
+   `config/forms.json`: replace the example website address and email addresses,
+   set the Turnstile hostname, and enable `contact`. In Cloudflare, add the Resend
+   API key, Turnstile secret key, and the two generated admin/abuse secrets as
+   Worker secrets. See [deployment](docs/deployment.md) and
+   [configuration](docs/configuration.md) for the exact fields.
+5. **Deploy your settings.** Run `npm run deploy` from your project copy, or use
+   the deployment method in the guide. Your form URL will look like
+   `https://YOUR-WORKER.YOUR-SUBDOMAIN.workers.dev/f/contact`.
+6. **Connect your website form.** Keep your existing layout and styling. Set its
+   endpoint to the URL above and add the Turnstile public site key. The field
+   names must match the form configuration (the default contact form uses `name`,
+   `email`, and `message`). Examples are below.
+7. **Send a real test.** Open your website, complete Turnstile, and submit a test
+   message. Check that the form reports success and that the notification arrives
+   at your chosen inbox. If thank-you emails are enabled, check the test sender's
+   inbox too. See [verification](docs/verification.md).
 
-Replace the URL and public site key, then configure and enable `contact`:
+### Connect a simple HTML form
+
+Replace the Worker URL and public Turnstile site key with your own. Keep the field
+names and action the same as your Worker configuration:
 
 ~~~html
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-<form action="https://forms.example.com/f/contact" method="POST">
-  <input name="name" required maxlength="100">
-  <input type="email" name="email" required maxlength="254">
-  <textarea name="message" required minlength="5" maxlength="8000"></textarea>
-  <div class="cf-turnstile" data-sitekey="YOUR-SITE-KEY" data-action="contact"></div>
-  <button type="submit">Send</button>
+
+<form action="https://YOUR-WORKER.YOUR-SUBDOMAIN.workers.dev/f/contact" method="POST">
+  <label>Name <input name="name" required maxlength="100"></label>
+  <label>Email <input type="email" name="email" required maxlength="254"></label>
+  <label>Message <textarea name="message" required minlength="5" maxlength="8000"></textarea></label>
+
+  <div class="cf-turnstile" data-sitekey="YOUR-PUBLIC-TURNSTILE-SITE-KEY" data-action="contact"></div>
+  <button type="submit">Send message</button>
 </form>
 ~~~
 
-The complete [HTML example](examples/html/contact.html) waits for verification
-before enabling Send. A [React/Next.js component](examples/react/ContactForm.tsx)
-includes widget cleanup, JSON requests, and safe lost-response retry keys.
+The browser sends the message and Turnstile result to your Worker. For a complete
+HTML page, see [`examples/html/contact.html`](examples/html/contact.html).
+
+### Connect a React or Next.js form
+
+Use [`examples/react/ContactForm.tsx`](examples/react/ContactForm.tsx) as a guide.
+Pass it your Worker URL and public Turnstile site key. If your website already has
+a form, keep its design and adapt the example's submit behavior to send the same
+fields. A successful JSON submission returns HTTP `202` with a submission ID.
+
+### Keep these keys private
+
+It is safe for website visitors to see the **Worker URL** and **Turnstile site
+key**; they are public settings. Never put any of these in website code, HTML,
+GitHub, or a browser request:
+
+- Resend API key
+- Turnstile secret key
+- `ADMIN_TOKEN`
+- `ABUSE_SECRET`
+
+Keep them as Cloudflare Worker secrets. Never copy another project's keys or
+email settings; every user configures their own accounts. The public example
+configuration is deliberately disabled and contains placeholders.
+
+### Common questions
+
+- **Will it change how my form looks?** No. You can keep your existing design and
+  fields; connect its submit action to your Worker.
+- **Where do submissions go?** They are stored in your Cloudflare D1 database and
+  emailed to the address you set as the notification recipient.
+- **Does the visitor get a reply?** Only if you turn on the optional acknowledgment
+  email in `config/forms.json`.
+- **Can visitors see saved messages?** No. Reading submissions requires the
+  private `ADMIN_TOKEN`; it must never be placed in the website.
+- **Does Open Form subscribe people to a mailing list?** No. The newsletter form
+  collects a request and notifies you; it does not manage marketing subscriptions.
+- **What does the free setup allow?** Cloudflare and Resend have their own limits.
+  See [current platform limits](docs/platform-limits.md); account quotas may be
+  shared with your other projects.
+
+For step-by-step Cloudflare setup, see [deployment](docs/deployment.md). For
+troubleshooting, see [the troubleshooting guide](docs/troubleshooting.md).
 
 ## Development checks
 
@@ -119,6 +186,9 @@ notifies its owner; it does not subscribe anyone to a marketing campaign.
 
 - [Deployment](docs/deployment.md)
 - [Configuration](docs/configuration.md)
+- [awaisx.com integration](docs/awaisx-integration.md)
+- [Release verification](docs/release.md)
+- [Changelog](CHANGELOG.md)
 - [API](docs/api.md)
 - [Architecture](docs/architecture.md)
 - [Platform limits](docs/platform-limits.md)
